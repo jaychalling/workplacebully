@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model AnalysisResult {
+  id            String   @id @default(cuid())
+  inputText     String
+  maskedText    String
+  score1        Int      // 지위·관계 우위 이용 (0-100)
+  score2        Int      // 업무 적정범위 초과 (0-100)
+  score3        Int      // 신체적·정신적 고통 (0-100)
+  totalScore    Int      // 종합 점수 (0-100)
+  confidence    Int      // 신뢰도 (0-100)
+  verdict       String   // "해당", "미해당", "판단불가"
+  createdAt     DateTime @default(now())
+}
+
+model CaseRecord {
+  id        String   @id @default(cuid())
+  title     String
+  court     String
+  date      String
+  result    String   // "인정" or "불인정"
+  summary   String
+  keywords  String   // comma-separated keywords
+  fullText  String
+  createdAt DateTime @default(now())
+}

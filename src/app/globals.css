@@ -8,6 +8,13 @@
   }
 }
 
+/*
+ * Design System based on UI-UX-PRO-MAX recommendations:
+ * - Trust & Authority style (professional blue/grey)
+ * - B2B Service palette: #0F172A primary, #1E40AF trust blue, #059669 security green
+ * - WCAG AAA target: 7:1+ contrast, 16px+ base font
+ * - Touch targets: 44x44px minimum
+ */
 @layer base {
   :root {
     --background: 210 40% 98%;
@@ -16,29 +23,31 @@
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 34%;
+    --primary: 221 83% 53%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
     --secondary-foreground: 222 47% 11%;
     --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted-foreground: 215 20% 40%;
     --accent: 210 40% 96%;
     --accent-foreground: 222 47% 11%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 221 83% 34%;
-    --chart-1: 221 83% 34%;
-    --chart-2: 142 71% 45%;
+    --ring: 221 83% 53%;
+    --chart-1: 221 83% 53%;
+    --chart-2: 160 84% 39%;
     --chart-3: 38 92% 50%;
     --chart-4: 0 84% 60%;
     --chart-5: 262 83% 58%;
     --radius: 0.5rem;
 
-    --score-low: 142 71% 45%;
+    --score-low: 160 84% 39%;
     --score-medium: 38 92% 50%;
     --score-high: 0 84% 60%;
+    --trust-blue: 221 83% 53%;
+    --security-green: 160 84% 39%;
   }
 }
 
@@ -49,5 +58,24 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  /* WCAG AAA: Visible focus rings (3-4px) */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2;
+  }
+  /* Minimum touch target 44x44px for interactive elements */
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

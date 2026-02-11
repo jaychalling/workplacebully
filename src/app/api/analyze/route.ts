@@ -29,24 +29,36 @@ export async function POST(request: NextRequest) {
       ...result.requirement3.matchedKeywords,
     ].map((k) => k.keyword);
 
+    interface RelatedCase {
+      id: string;
+      title: string;
+      result: string;
+    }
+
+    let relatedCasesData: RelatedCase[] = [];
+
     if (allKeywords.length > 0) {
-      const relatedCases = sampleCases
+      const matched = sampleCases
         .map((c, i) => {
           const caseKeywords = c.keywords.split(",");
           const matchCount = caseKeywords.filter((ck) =>
             allKeywords.some((ak) => ck.includes(ak) || ak.includes(ck))
           ).length;
-          return { id: String(i), matchCount };
+          return { id: String(i), title: c.title, result: c.result, matchCount };
         })
         .filter((c) => c.matchCount > 0)
         .sort((a, b) => b.matchCount - a.matchCount)
-        .slice(0, 5)
-        .map((c) => c.id);
+        .slice(0, 5);
 
-      result.relatedCaseIds = relatedCases;
+      result.relatedCaseIds = matched.map((c) => c.id);
+      relatedCasesData = matched.map((c) => ({
+        id: c.id,
+        title: c.title,
+        result: c.result,
+      }));
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({ ...result, relatedCases: relatedCasesData });
   } catch (error) {
     console.error("Analysis error:", error);
     return NextResponse.json(

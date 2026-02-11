@@ -11,6 +11,7 @@ const geistSans = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://workplacebully.vercel.app"),
   title: {
     default: "직장내 괴롭힘 판단기 - 내 상황, 괴롭힘일까?",
     template: "%s | 직장내 괴롭힘 판단기",

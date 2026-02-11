@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -25,16 +25,34 @@ interface CaseDetail extends CaseListItem {
 export default function CasesPage() {
   const [cases, setCases] = useState<CaseListItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [resultFilter, setResultFilter] = useState<"" | "인정" | "불인정">("");
   const [loading, setLoading] = useState(true);
   const [selectedCase, setSelectedCase] = useState<CaseDetail | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounce search input by 300ms
+  useEffect(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [searchQuery]);
 
   const fetchCases = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (searchQuery) params.set("q", searchQuery);
+      if (debouncedQuery) params.set("q", debouncedQuery);
       if (resultFilter) params.set("result", resultFilter);
 
       const response = await fetch(`/api/cases?${params.toString()}`);
@@ -45,7 +63,7 @@ export default function CasesPage() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, resultFilter]);
+  }, [debouncedQuery, resultFilter]);
 
   useEffect(() => {
     fetchCases();
@@ -64,6 +82,26 @@ export default function CasesPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
+      {/* Disclaimer Banner */}
+      <div className="mb-8 rounded-lg border border-amber-300 bg-amber-50 p-4 flex items-start gap-3">
+        <svg
+          className="w-5 h-5 text-amber-600 shrink-0 mt-0.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+          />
+        </svg>
+        <p className="text-sm font-medium text-amber-800">
+          본 사례는 교육 목적으로 작성된 가상의 참고 사례입니다. 실제 법원 판결이 아닙니다.
+        </p>
+      </div>
+
       <div className="text-center mb-10">
         <h1 className="text-3xl font-bold mb-3">판례 모음</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">

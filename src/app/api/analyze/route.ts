@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { analyzeText, type AnalysisInput } from "@/lib/analysis/engine";
-import { prisma } from "@/lib/prisma";
+import { sampleCases } from "@/lib/data/cases";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     const result = analyzeText(body);
 
-    // Find related cases based on matched keywords
+    // Find related cases based on matched keywords using in-memory data
     const allKeywords = [
       ...result.requirement1.matchedKeywords,
       ...result.requirement2.matchedKeywords,
@@ -30,14 +30,13 @@ export async function POST(request: NextRequest) {
     ].map((k) => k.keyword);
 
     if (allKeywords.length > 0) {
-      const cases = await prisma.caseRecord.findMany();
-      const relatedCases = cases
-        .map((c) => {
+      const relatedCases = sampleCases
+        .map((c, i) => {
           const caseKeywords = c.keywords.split(",");
           const matchCount = caseKeywords.filter((ck) =>
             allKeywords.some((ak) => ck.includes(ak) || ak.includes(ck))
           ).length;
-          return { id: c.id, matchCount };
+          return { id: String(i), matchCount };
         })
         .filter((c) => c.matchCount > 0)
         .sort((a, b) => b.matchCount - a.matchCount)
@@ -46,20 +45,6 @@ export async function POST(request: NextRequest) {
 
       result.relatedCaseIds = relatedCases;
     }
-
-    // Save analysis result
-    await prisma.analysisResult.create({
-      data: {
-        inputText: body.text,
-        maskedText: result.maskedText,
-        score1: result.requirement1.score,
-        score2: result.requirement2.score,
-        score3: result.requirement3.score,
-        totalScore: result.totalScore,
-        confidence: result.confidence,
-        verdict: result.verdict,
-      },
-    });
 
     return NextResponse.json(result);
   } catch (error) {

@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { sampleCases } from "@/lib/data/cases";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q") ?? "";
-    const result = searchParams.get("result") ?? ""; // "인정" or "불인정"
+    const result = searchParams.get("result") ?? "";
 
-    const cases = await prisma.caseRecord.findMany({
-      orderBy: { date: "desc" },
-    });
+    // Use in-memory data with generated IDs, sorted by date desc
+    const casesWithIds = sampleCases
+      .map((c, i) => ({ ...c, id: String(i) }))
+      .sort((a, b) => b.date.localeCompare(a.date));
 
-    let filtered = cases;
+    let filtered = casesWithIds;
 
     if (query) {
       const lowerQuery = query.toLowerCase();
@@ -28,7 +29,6 @@ export async function GET(request: NextRequest) {
       filtered = filtered.filter((c) => c.result === result);
     }
 
-    // Return without fullText for list view (lighter payload)
     const listData = filtered.map((c) => ({
       id: c.id,
       title: c.title,

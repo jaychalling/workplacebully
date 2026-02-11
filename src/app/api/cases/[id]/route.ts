@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { sampleCases } from "@/lib/data/cases";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const caseRecord = await prisma.caseRecord.findUnique({
-      where: { id: params.id },
-    });
+    const index = parseInt(params.id, 10);
+    const caseRecord = sampleCases[index];
 
     if (!caseRecord) {
       return NextResponse.json(
@@ -17,7 +16,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(caseRecord);
+    return NextResponse.json({ ...caseRecord, id: params.id });
   } catch (error) {
     console.error("Case detail fetch error:", error);
     return NextResponse.json(
